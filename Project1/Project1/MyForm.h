@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <ctime>
 namespace Project20 {
 	using namespace std;
 	using namespace System;
@@ -40,7 +41,7 @@ namespace Project20 {
 	private: System::Windows::Forms::Button^  Mostrar_imagen;
 	protected:
 	private: System::Windows::Forms::Button^  Filtrar;
-	private: System::Windows::Forms::Timer^  timer1;
+
 	private: System::Windows::Forms::Label^  contador;
 	private: System::Windows::Forms::Label^  segss;
 	private: System::ComponentModel::IContainer^  components;
@@ -61,10 +62,8 @@ namespace Project20 {
 		/// </summary>
 		void InitializeComponent(void)
 		{
-			this->components = (gcnew System::ComponentModel::Container());
 			this->Mostrar_imagen = (gcnew System::Windows::Forms::Button());
 			this->Filtrar = (gcnew System::Windows::Forms::Button());
-			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
 			this->contador = (gcnew System::Windows::Forms::Label());
 			this->segss = (gcnew System::Windows::Forms::Label());
 			this->SuspendLayout();
@@ -88,11 +87,6 @@ namespace Project20 {
 			this->Filtrar->Text = L"Filtrar";
 			this->Filtrar->UseVisualStyleBackColor = true;
 			this->Filtrar->Click += gcnew System::EventHandler(this, &MyForm::Filtrar_Click);
-			// 
-			// timer1
-			// 
-			this->timer1->Interval = 1000;
-			this->timer1->Tick += gcnew System::EventHandler(this, &MyForm::timer);
 			// 
 			// contador
 			// 
@@ -160,13 +154,26 @@ namespace Project20 {
 		Color mediana(int x, int y, Bitmap^ ruido) {
 			x--; y--;
 			vector<int>* val = new vector<int>;
-			int cont = 0, quiero = 0;
-			for (int i = x; i <= x + 2; i++) {	  //	for (int i = x - 1; i <= x + 1; i++) {	
-				for (int e = y; e <= y + 2; e++) {// for (int e = y - 1; e <= y + 1; e++)
-					val->push_back(ruido->GetPixel(i, e).ToArgb());//explotaba aqui antes|
-					cont++;
-				}
-			}
+			//for (int i = x; i <= x + 2; i++) {	  //	for (int i = x - 1; i <= x + 1; i++) {	
+			//	for (int e = y; e <= y + 2; e++) {// for (int e = y - 1; e <= y + 1; e++)
+			//		val->push_back(ruido->GetPixel(i, e).ToArgb());//explotaba aqui antes|
+			//	}
+			//}
+
+			//for (int i = x; i <= x + 2; i++) {	  //	for (int i = x - 1; i <= x + 1; i++) {	
+				//for (int e = y; e <= y + 2; e++) {// for (int e = y - 1; e <= y + 1; e++)
+			val->push_back(ruido->GetPixel(x		, y		).ToArgb());//explotaba aqui antes|
+			val->push_back(ruido->GetPixel((x + 1)	, y		).ToArgb());//explotaba aqui antes|
+			val->push_back(ruido->GetPixel((x + 2)	, y		).ToArgb());//explotaba aqui antes|
+			val->push_back(ruido->GetPixel(x		, (y + 1)).ToArgb());//explotaba aqui antes|
+			val->push_back(ruido->GetPixel((x + 1)	, (y + 1)).ToArgb());//explotaba aqui antes|
+			val->push_back(ruido->GetPixel((x + 2)	, (y + 1)).ToArgb());//explotaba aqui antes|
+			val->push_back(ruido->GetPixel(x, y + 2 ).ToArgb());//explotaba aqui antes|
+			val->push_back(ruido->GetPixel((x + 1)	, (y + 2)).ToArgb());//explotaba aqui antes|
+			val->push_back(ruido->GetPixel((x + 2)	, (y + 2)).ToArgb());//explotaba aqui antes|
+
+		//}
+	//}
 			quicksort(val, val->size());
 			Color mediana = Color::FromArgb(val->at(4));
 			return mediana;
@@ -181,8 +188,7 @@ namespace Project20 {
 	private: System::Void Filtrar_Click(System::Object^  sender, System::EventArgs^  e) {
 		Graphics^ graficador = this->CreateGraphics();
 		Bitmap^ ruido = gcnew Bitmap("ruido.jpg");
-		this->timer1->Enabled = true;
-		for (char i = 0;i <= 2;i++) {
+		for (char i = 0;i <= 1;i++) {
 			for (int i = 1; i < (ruido->Height - 1); i++) {//tal vez error con los pixeles que coge de la imagem(deberia ser hasta x-1 e y-1)
 				for (int e = 1; e < (ruido->Width - 1); e++) {
 					ruido->SetPixel(e, i, mediana(e, i, ruido));
@@ -190,7 +196,7 @@ namespace Project20 {
 			}
 		}
 		Rectangle Aimg = Rectangle(60 + ruido->Width*0.6, 30, (ruido->Width*0.6), (ruido->Height*0.6));
-		graficador->DrawImage(ruido, Aimg);
+		graficador->DrawImage(ruido, Aimg); 
 	}
 	private: System::Void timer(System::Object^  sender, System::EventArgs^  e) {
 		this->cont++;
