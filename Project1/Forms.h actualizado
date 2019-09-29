@@ -7,7 +7,7 @@
 #include <Gdipluscolor.h> 
 #pragma comment(lib, "gdiplus.lib") 
 
-namespace Project2 {
+namespace Project20 {
 	using namespace std;
 	using namespace System;
 	using namespace System::ComponentModel;
@@ -22,13 +22,13 @@ namespace Project2 {
 	/// </summary>
 	public ref class MyForm : public System::Windows::Forms::Form
 	{
-		
+
 	private:
 		int cont = 0;
 		void Mostrar() {
 			System::Drawing::Graphics ^ graficador = this->CreateGraphics();
-			System::Drawing::Bitmap ^ruido = gcnew System::Drawing::Bitmap("reduccion.jpg");
-			System::Drawing::Rectangle Aimg = System::Drawing::Rectangle(30, 30, (ruido->Width*0.6), (ruido->Height*0.6));
+			System::Drawing::Bitmap ^ruido = gcnew System::Drawing::Bitmap("300.jpg");
+			System::Drawing::Rectangle Aimg = System::Drawing::Rectangle(30, 30, (ruido->Width), (ruido->Height));
 			graficador->DrawImage(ruido, Aimg);
 		}
 	public:
@@ -55,10 +55,11 @@ namespace Project2 {
 	private: System::Windows::Forms::Button^  Mostrar_imagen;
 	protected:
 	private: System::Windows::Forms::Button^  Filtrar;
+	private: System::Windows::Forms::Timer^  timer1;
 
-	private: System::Windows::Forms::Label^  contador;
-	private: System::Windows::Forms::Label^  segss;
-	private: System::Windows::Forms::Button^  Start;
+
+
+
 
 
 
@@ -80,16 +81,15 @@ namespace Project2 {
 		/// </summary>
 		void InitializeComponent(void)
 		{
+			this->components = (gcnew System::ComponentModel::Container());
 			this->Mostrar_imagen = (gcnew System::Windows::Forms::Button());
 			this->Filtrar = (gcnew System::Windows::Forms::Button());
-			this->contador = (gcnew System::Windows::Forms::Label());
-			this->segss = (gcnew System::Windows::Forms::Label());
-			this->Start = (gcnew System::Windows::Forms::Button());
+			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
 			this->SuspendLayout();
 			// 
 			// Mostrar_imagen
 			// 
-			this->Mostrar_imagen->Location = System::Drawing::Point(67, 558);
+			this->Mostrar_imagen->Location = System::Drawing::Point(55, 430);
 			this->Mostrar_imagen->Name = L"Mostrar_imagen";
 			this->Mostrar_imagen->Size = System::Drawing::Size(75, 23);
 			this->Mostrar_imagen->TabIndex = 0;
@@ -99,7 +99,7 @@ namespace Project2 {
 			// 
 			// Filtrar
 			// 
-			this->Filtrar->Location = System::Drawing::Point(743, 558);
+			this->Filtrar->Location = System::Drawing::Point(730, 430);
 			this->Filtrar->Name = L"Filtrar";
 			this->Filtrar->Size = System::Drawing::Size(64, 23);
 			this->Filtrar->TabIndex = 1;
@@ -107,49 +107,22 @@ namespace Project2 {
 			this->Filtrar->UseVisualStyleBackColor = true;
 			this->Filtrar->Click += gcnew System::EventHandler(this, &MyForm::Filtrar_Click);
 			// 
-			// contador
+			// timer1
 			// 
-			this->contador->AutoSize = true;
-			this->contador->Location = System::Drawing::Point(352, 563);
-			this->contador->Name = L"contador";
-			this->contador->Size = System::Drawing::Size(26, 13);
-			this->contador->TabIndex = 2;
-			this->contador->Text = L"Seg";
-			// 
-			// segss
-			// 
-			this->segss->AutoSize = true;
-			this->segss->Location = System::Drawing::Point(414, 567);
-			this->segss->Name = L"segss";
-			this->segss->Size = System::Drawing::Size(13, 13);
-			this->segss->TabIndex = 3;
-			this->segss->Text = L"0";
-			// 
-			// Start
-			// 
-			this->Start->Location = System::Drawing::Point(922, 553);
-			this->Start->Name = L"Start";
-			this->Start->Size = System::Drawing::Size(75, 23);
-			this->Start->TabIndex = 4;
-			this->Start->Text = L"Start";
-			this->Start->UseVisualStyleBackColor = true;
-			this->Start->Click += gcnew System::EventHandler(this, &MyForm::Start_imprime);
+			this->timer1->Enabled = true;
+			this->timer1->Tick += gcnew System::EventHandler(this, &MyForm::Imprime);
 			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackColor = System::Drawing::Color::White;
-			this->ClientSize = System::Drawing::Size(1330, 619);
-			this->Controls->Add(this->Start);
-			this->Controls->Add(this->segss);
-			this->Controls->Add(this->contador);
+			this->ClientSize = System::Drawing::Size(1191, 514);
 			this->Controls->Add(this->Filtrar);
 			this->Controls->Add(this->Mostrar_imagen);
 			this->Name = L"MyForm";
 			this->Text = L"MyForm";
 			this->ResumeLayout(false);
-			this->PerformLayout();
 
 		}
 		int pivot(vector<int>* a, int i, int f) {
@@ -202,13 +175,13 @@ namespace Project2 {
 			val->push_back(ruido->GetPixel((x + 1), (y + 2)).ToArgb());
 			val->push_back(ruido->GetPixel((x + 2), (y + 2)).ToArgb());
 
-																	   //}
-																	   //}
+			//}
+			//}
 			quicksort(val, val->size());
 			System::Drawing::Color mediana = System::Drawing::Color::FromArgb(val->at(4));
 			return mediana;
 		}
-		
+
 		int GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
 			UINT  num = 0;          // number of image encoders 
 			UINT  size = 0;         // size of the image encoder array in bytes 
@@ -233,8 +206,8 @@ namespace Project2 {
 			return -1;  // Failure 
 		}
 		void ToGrey(Gdiplus::Bitmap *ruido2, Gdiplus::Bitmap *original) {
-			for (int i = 0; i < (original->GetHeight() -1); i++) {//tal vez error con los pixeles que coge de la imagem(deberia ser hasta x-1 e y-1)
-				for (int e = 0; e < (original->GetWidth()-1 ); e++) {
+			for (int i = 0; i < (original->GetHeight() - 1); i++) {//tal vez error con los pixeles que coge de la imagem(deberia ser hasta x-1 e y-1)
+				for (int e = 0; e < (original->GetWidth() - 1); e++) {
 					Gdiplus::Color c;
 					original->GetPixel(e, i, &c);
 					BYTE average = (BYTE)((c.GetRed() + c.GetGreen() + c.GetBlue()) / 3);
@@ -243,7 +216,7 @@ namespace Project2 {
 			}
 
 		}
-		
+
 #pragma endregion
 	private: System::Void Mostrar_imagen_Click(System::Object^  sender, System::EventArgs^  e) {
 		GdiplusStartupInput gdiplusStartupInput;
@@ -252,7 +225,7 @@ namespace Project2 {
 
 		Gdiplus::Bitmap *og = Gdiplus::Bitmap::FromFile(L"reduccion.jpg");
 		Gdiplus::Bitmap *cambiado = new Gdiplus::Bitmap(og->GetWidth(), og->GetHeight());
-		this->ToGrey(cambiado,og);																	//Vuelves la imagen blacno y negro para luego editarla
+		this->ToGrey(cambiado, og);																	//Vuelves la imagen blacno y negro para luego editarla
 		CLSID pngClsid;
 
 		if (GetEncoderClsid(L"ruido.jpg", &pngClsid))
@@ -266,7 +239,7 @@ namespace Project2 {
 		GdiplusShutdown(gdiplusToken);
 		//ahora con laimagen a blanco y negro con los metods de forms?
 		System::Drawing::Graphics ^ graficador = this->CreateGraphics();
-		System::Drawing::Bitmap ^ruido = gcnew System::Drawing::Bitmap ("cambio1.jpg");
+		System::Drawing::Bitmap ^ruido = gcnew System::Drawing::Bitmap("cambio1.jpg");
 		System::Drawing::Rectangle Aimg = System::Drawing::Rectangle(30, 30, (ruido->Width*0.6), (ruido->Height*0.6));
 		graficador->DrawImage(ruido, Aimg);
 		cout << "Salio" << endl;
@@ -274,24 +247,23 @@ namespace Project2 {
 	}
 	private: System::Void Filtrar_Click(System::Object^  sender, System::EventArgs^  e) {
 		System::Drawing::Graphics^ graficador = this->CreateGraphics();
-		System::Drawing::Bitmap^ ruido = gcnew System::Drawing::Bitmap("ruido.jpg");
-		for (char i = 0;i <= 1;i++) {
+		System::Drawing::Bitmap^ ruido = gcnew System::Drawing::Bitmap("300.jpg");
+		for (char i = 0; i <= 1; i++) {
 			for (int i = 1; i < (ruido->Height - 1); i++) {//tal vez error con los pixeles que coge de la imagem(deberia ser hasta x-1 e y-1)
 				for (int e = 1; e < (ruido->Width - 1); e++) {
 					ruido->SetPixel(e, i, mediana(e, i, ruido));
 				}
 			}
 		}
-		System::Drawing::Rectangle Aimg = System::Drawing::Rectangle(60 + ruido->Width*0.6, 30, (ruido->Width*0.6), (ruido->Height*0.6));
+		System::Drawing::Rectangle Aimg = System::Drawing::Rectangle(60 + ruido->Width, 30, (ruido->Width), (ruido->Height));
 		graficador->DrawImage(ruido, Aimg);
 	}
-	private: System::Void timer(System::Object^  sender, System::EventArgs^  e) {
-		this->cont++;
-		this->segss->Text = cont.ToString();
-
-	}
 	private: System::Void Start_imprime(System::Object^  sender, System::EventArgs^  e) {
+	}
+
+	private: System::Void Imprime(System::Object^  sender, System::EventArgs^  e) {
 		this->Mostrar();
+		this->timer1->Enabled = false;
 	}
 };
 }
