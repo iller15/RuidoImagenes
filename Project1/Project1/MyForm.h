@@ -56,6 +56,7 @@ namespace Project20 {
 	protected:
 	private: System::Windows::Forms::Button^  Filtrar;
 	private: System::Windows::Forms::Timer^  timer1;
+	private: System::Windows::Forms::Button^ Canny;
 
 
 
@@ -85,6 +86,7 @@ namespace Project20 {
 			this->Mostrar_imagen = (gcnew System::Windows::Forms::Button());
 			this->Filtrar = (gcnew System::Windows::Forms::Button());
 			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
+			this->Canny = (gcnew System::Windows::Forms::Button());
 			this->SuspendLayout();
 			// 
 			// Mostrar_imagen
@@ -112,12 +114,23 @@ namespace Project20 {
 			this->timer1->Enabled = true;
 			this->timer1->Tick += gcnew System::EventHandler(this, &MyForm::Imprime);
 			// 
+			// Canny
+			// 
+			this->Canny->Location = System::Drawing::Point(900, 430);
+			this->Canny->Name = L"Canny";
+			this->Canny->Size = System::Drawing::Size(64, 23);
+			this->Canny->TabIndex = 2;
+			this->Canny->Text = L"Canny";
+			this->Canny->UseVisualStyleBackColor = true;
+			this->Canny->Click += gcnew System::EventHandler(this, &MyForm::Canny_Click);
+			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackColor = System::Drawing::Color::White;
 			this->ClientSize = System::Drawing::Size(1191, 514);
+			this->Controls->Add(this->Canny);
 			this->Controls->Add(this->Filtrar);
 			this->Controls->Add(this->Mostrar_imagen);
 			this->Name = L"MyForm";
@@ -142,7 +155,7 @@ namespace Project20 {
 				a->at(der) = a->at(i);
 				a->at(i) = t;
 			}
-			return der;
+return der;
 		}
 		void quick(vector<int>* a, int i, int f) {
 			if (f > i) {
@@ -151,7 +164,7 @@ namespace Project20 {
 				quick(a, p + 1, f);
 			}
 		}
-		void quicksort(vector<int>* a, int n) {
+		void quicksort(vector<int> * a, int n) {
 			quick(a, 0, n - 1);
 		}
 		System::Drawing::Color mediana(int x, int y, System::Drawing::Bitmap ^ ruido) {
@@ -179,7 +192,89 @@ namespace Project20 {
 			//}
 			quicksort(val, val->size());
 			System::Drawing::Color mediana = System::Drawing::Color::FromArgb(val->at(4));
+			val->clear();
 			return mediana;
+		}
+
+		System::Drawing::Color canny(int x, int y, System::Drawing::Bitmap ^ ruido) {
+			vector<int>* val = new vector<int>;
+			//for (int i = x; i <= x + 2; i++) {	  //	for (int i = x - 1; i <= x + 1; i++) {	
+			//	for (int e = y; e <= y + 2; e++) {// for (int e = y - 1; e <= y + 1; e++)
+			//		val->push_back(ruido->GetPixel(i, e).ToArgb());//explotaba aqui antes|
+			//	}
+			//}
+
+			//for (int i = x; i <= x + 2; i++) {	  //	for (int i = x - 1; i <= x + 1; i++) {	
+			//for (int e = y; e <= y + 2; e++) {// for (int e = y - 1; e <= y + 1; e++)
+			val->push_back(ruido->GetPixel((x - 1), (y - 1)).ToArgb());//explotaba aqui antes|
+			val->push_back(ruido->GetPixel(x, (y - 1)).ToArgb());
+			val->push_back(ruido->GetPixel((x + 1), (y - 1)).ToArgb());
+			val->push_back(ruido->GetPixel((x - 1), y).ToArgb());
+			val->push_back(ruido->GetPixel(x, y).ToArgb());
+			val->push_back(ruido->GetPixel((x + 1), y).ToArgb());
+			val->push_back(ruido->GetPixel(x - 1, y + 1).ToArgb());
+			val->push_back(ruido->GetPixel(x, (y + 1)).ToArgb());
+			val->push_back(ruido->GetPixel((x + 1), (y + 1)).ToArgb());
+
+			//}
+			//}
+			// Gx
+			// -1  0  1
+			// -2  0  2
+			// -1  0  1
+			int Gx = (val->at(0) * -1) + (val->at(1) * 0) + (val->at(2) * 1)
+				+ (val->at(3) * -2) + (val->at(4) * 0) + (val->at(5) * 2)
+				+ (val->at(6) * -1) + (val->at(7) * 0) + (val->at(8) * 1);
+			//Gy
+			// -1 -2 -1
+			//  0  0  0
+			//  1  2  1
+			int Gy = (val->at(0) * -1) + (val->at(1) * -2) + (val->at(2) * -1)
+				+ (val->at(3) * 0) + (val->at(4) * 0) + (val->at(5) * 0)
+				+ (val->at(6) * 1) + (val->at(7) * 2) + (val->at(8) * 1);
+			//G
+			int G = sqrt(pow(Gx, 2) + pow(Gy, 2));
+			//orientación
+			if (Gx != 0) {
+				double orient = atan(Gy / Gx);
+			}
+			else double orient = atan(tan(90));
+
+			System::Drawing::Color rcanny;
+			//limites
+			if (G > 8000000) {
+				rcanny = System::Drawing::Color::Black;
+			}
+			else if (G > 4200000) {
+				rcanny = System::Drawing::Color::Blue;
+			}
+			else rcanny = System::Drawing::Color::White;
+
+			val->clear();
+			return rcanny;
+		}
+
+		bool PerteneceLinea(int x, int y, System::Drawing::Bitmap ^ ruido) {
+			if (EsAzul(x,y,ruido)) {
+				if (ruido->GetPixel(x - 1, y - 1).ToArgb() == System::Drawing::Color::Black.ToArgb()
+					|| ruido->GetPixel(x - 1, y).ToArgb() == System::Drawing::Color::Black.ToArgb()
+					|| ruido->GetPixel(x - 1, y + 1).ToArgb() == System::Drawing::Color::Black.ToArgb()
+					|| ruido->GetPixel(x, y - 1).ToArgb() == System::Drawing::Color::Black.ToArgb()
+					|| ruido->GetPixel(x, y + 1).ToArgb() == System::Drawing::Color::Black.ToArgb()
+					|| ruido->GetPixel(x + 1, y - 1).ToArgb() == System::Drawing::Color::Black.ToArgb()
+					|| ruido->GetPixel(x + 1, y).ToArgb() == System::Drawing::Color::Black.ToArgb()
+					|| ruido->GetPixel(x + 1, y + 1).ToArgb() == System::Drawing::Color::Black.ToArgb()) {
+					return true;
+				}
+				else return false;
+			}
+			return false;
+		}
+		bool EsAzul(int x, int y, System::Drawing::Bitmap^ ruido) {
+			if (ruido->GetPixel(x, y).ToArgb() == System::Drawing::Color::Blue.ToArgb()) {
+				return true;
+			}
+			else return false;
 		}
 
 		int GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
@@ -265,5 +360,56 @@ namespace Project20 {
 		this->Mostrar();
 		this->timer1->Enabled = false;
 	}
+private: System::Void Canny_Click(System::Object^ sender, System::EventArgs^ e) {
+	System::Drawing::Graphics^ graficador = this->CreateGraphics();
+	System::Drawing::Bitmap^ ruido = gcnew System::Drawing::Bitmap("300.jpg");
+	System::Drawing::Bitmap^ ruido2 = gcnew System::Drawing::Bitmap("300.jpg");
+	for (char a = 0; a <= 1; a++) {
+		for (int i = 1; i < (ruido->Height - 1); i++) {//tal vez error con los pixeles que coge de la imagem(deberia ser hasta x-1 e y-1)
+			for (int e = 1; e < (ruido->Width - 1); e++) {
+				ruido->SetPixel(e, i, mediana(e, i, ruido));
+			}
+		}
+	}
+
+	//colocar lineas blancas a los bordes notorios, azules a los medios y quitar los bordes débiles;
+	for (char a = 0; a <= 1; a++) {
+		for (int i = 1; i < (ruido->Height - 1); i++) {//tal vez error con los pixeles que coge de la imagem(deberia ser hasta x-1 e y-1)
+			for (int e = 1; e < (ruido->Width - 1); e++) {
+				ruido2->SetPixel(e, i, canny(e, i, ruido));
+			}
+		}
+	}
+
+	//cambiar las lineas azules a blancas si son adyacentes a una linea blanca
+	bool HayCambio = false;
+	do{
+		HayCambio = false;
+		for (char a = 0; a <= 1; a++) {
+			for (int i = 1; i < (ruido2->Height - 1); i++) {//tal vez error con los pixeles que coge de la imagem(deberia ser hasta x-1 e y-1)
+				for (int e = 1; e < (ruido2->Width - 1); e++) {
+					if (PerteneceLinea(e, i, ruido2)) {
+						ruido2->SetPixel(e, i, System::Drawing::Color::Black);
+						HayCambio = true;
+					}
+				}
+			}
+		}
+	} while (HayCambio);
+
+	//borrar las lineas azules que no estan unidas a lineas blancas
+	for (char a = 0; a <= 1; a++) {
+		for (int i = 1; i < (ruido2->Height - 1); i++) {//tal vez error con los pixeles que coge de la imagem(deberia ser hasta x-1 e y-1)
+			for (int e = 1; e < (ruido2->Width - 1); e++) {
+				if (EsAzul(e, i, ruido2)) {
+					ruido2->SetPixel(e, i, System::Drawing::Color::White);
+				}
+			}
+		}
+	}
+
+	System::Drawing::Rectangle Aimg = System::Drawing::Rectangle(90 + 2*ruido->Width, 30, (ruido->Width), (ruido->Height));
+	graficador->DrawImage(ruido2, Aimg);
+}
 };
 }
