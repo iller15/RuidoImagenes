@@ -56,6 +56,7 @@ namespace Project20 {
 	protected:
 	private: System::Windows::Forms::Button^  Filtrar;
 	private: System::Windows::Forms::Timer^  timer1;
+	private: System::Windows::Forms::Button^  button1;
 
 
 
@@ -85,6 +86,7 @@ namespace Project20 {
 			this->Mostrar_imagen = (gcnew System::Windows::Forms::Button());
 			this->Filtrar = (gcnew System::Windows::Forms::Button());
 			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
+			this->button1 = (gcnew System::Windows::Forms::Button());
 			this->SuspendLayout();
 			// 
 			// Mostrar_imagen
@@ -112,12 +114,23 @@ namespace Project20 {
 			this->timer1->Enabled = true;
 			this->timer1->Tick += gcnew System::EventHandler(this, &MyForm::Imprime);
 			// 
+			// button1
+			// 
+			this->button1->Location = System::Drawing::Point(381, 430);
+			this->button1->Name = L"button1";
+			this->button1->Size = System::Drawing::Size(75, 23);
+			this->button1->TabIndex = 2;
+			this->button1->Text = L"button1";
+			this->button1->UseVisualStyleBackColor = true;
+			this->button1->Click += gcnew System::EventHandler(this, &MyForm::FunLaplaciano);
+			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackColor = System::Drawing::Color::White;
 			this->ClientSize = System::Drawing::Size(1191, 514);
+			this->Controls->Add(this->button1);
 			this->Controls->Add(this->Filtrar);
 			this->Controls->Add(this->Mostrar_imagen);
 			this->Name = L"MyForm";
@@ -181,7 +194,22 @@ namespace Project20 {
 			System::Drawing::Color mediana = System::Drawing::Color::FromArgb(val->at(4));
 			return mediana;
 		}
+		System::Drawing::Color laplaciano(int x, int y, System::Drawing::Bitmap ^ ruido) {
+			vector<int>* val = new vector<int>;
+			int suma = 0;
 
+			suma = suma + (4 * (ruido->GetPixel(x, y).ToArgb()));//explotaba aqui antes|
+			suma -= (ruido->GetPixel((x + 1), y).ToArgb());
+			suma -= (ruido->GetPixel((x - 1), y).ToArgb());
+			suma -= (ruido->GetPixel(x, (y + 1)).ToArgb());
+			suma -= (ruido->GetPixel(x, y - 1).ToArgb());
+
+			//}
+			//}
+			quicksort(val, val->size());
+			System::Drawing::Color laplaciano = System::Drawing::Color::FromArgb(suma);
+			return laplaciano;
+		}
 		int GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
 			UINT  num = 0;          // number of image encoders 
 			UINT  size = 0;         // size of the image encoder array in bytes 
@@ -243,7 +271,6 @@ namespace Project20 {
 		System::Drawing::Rectangle Aimg = System::Drawing::Rectangle(30, 30, (ruido->Width*0.6), (ruido->Height*0.6));
 		graficador->DrawImage(ruido, Aimg);
 		cout << "Salio" << endl;
-
 	}
 	private: System::Void Filtrar_Click(System::Object^  sender, System::EventArgs^  e) {
 		System::Drawing::Graphics^ graficador = this->CreateGraphics();
@@ -258,12 +285,25 @@ namespace Project20 {
 		System::Drawing::Rectangle Aimg = System::Drawing::Rectangle(60 + ruido->Width, 30, (ruido->Width), (ruido->Height));
 		graficador->DrawImage(ruido, Aimg);
 	}
-	private: System::Void Start_imprime(System::Object^  sender, System::EventArgs^  e) {
-	}
+
+
 
 	private: System::Void Imprime(System::Object^  sender, System::EventArgs^  e) {
 		this->Mostrar();
 		this->timer1->Enabled = false;
+	}
+	private: System::Void FunLaplaciano(System::Object^  sender, System::EventArgs^  e) {
+		System::Drawing::Graphics^ graficador = this->CreateGraphics();
+		System::Drawing::Bitmap^ ruido = gcnew System::Drawing::Bitmap("300.jpg");
+		for (char i = 0; i <= 1; i++) {
+			for (int i = 1; i < (ruido->Height - 1); i++) {//tal vez error con los pixeles que coge de la imagem(deberia ser hasta x-1 e y-1)
+				for (int e = 1; e < (ruido->Width - 1); e++) {
+					ruido->SetPixel(e, i, laplaciano(e, i, ruido));
+				}
+			}
+		}
+		System::Drawing::Rectangle Aimg = System::Drawing::Rectangle(90 + 2*(ruido->Width), 30, (ruido->Width), (ruido->Height));
+		graficador->DrawImage(ruido, Aimg);
 	}
 };
 }
